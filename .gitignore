@@ -1,2 +1,4 @@
 *.retry
 tasks.txt
+venv
+.vscode/settings.json

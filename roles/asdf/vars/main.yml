@@ -1,0 +1,26 @@
+---
+asdf_git_repo: "https://github.com/asdf-vm/asdf.git"
+asdf_home: "{{ ansible_env.HOME }}"
+asdf_dir: "{{ asdf_home }}/asdf"
+common_packages:
+  - curl
+  - git
+  - automake
+  - autoconf
+  - libssl-dev
+  - coreutils
+  - gcc
+  - libyaml-dev
+  - libxslt1-dev
+  - libffi-dev
+  - libtool
+  - unixodbc-dev
+  - unzip
+centos_packages:
+  - "{{ common_packages }}"
+  - readline-devel
+  - ncurses-devel
+ubuntu_packages:
+  - "{{ common_packages }}"
+  - libreadline-dev
+  - libncurses5-dev

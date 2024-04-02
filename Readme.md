@@ -1,6 +1,8 @@
-# 个人常用 ansible 脚本
+# 个人 ansible 脚本
 
 ## 快速开始
+
+修改 hosts 文件
 
 ``` bash
 # 安装依赖
@@ -10,7 +12,7 @@ $ ansible-galaxy install -r requirements.yml
 $ ansible-playbook -i hosts git.yml
 
 # 指定某一台测试服务器，一键安装
-$ ansible-playbook -i hosts --limit=op prepare.yml git.yml tmux.yml vim.yml language.yml zsh.yml
+$ ansible-playbook -i hosts prepare.yml git.yml tmux.yml vim.yml language.yml zsh.yml
 ```
 
 ## Q&A

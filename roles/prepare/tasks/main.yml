@@ -1,31 +1,36 @@
-- name: Prepare packages for yum
-  yum:
+- name: Prepare packages
+  package:
     name:
-      - epel-release
       - sysstat
       - git
       - bash-completion
-      - bind-utils
+      - dnsutils
       - jq
       - htop
       - lsof
       - rsync
+  ignore_errors: true
+  when: ansible_os_family == 'RedHat' or ansible_os_family == 'Debian'
+
+- name: Prepare (RedHat only)
+  yum:
+    name: 
+      - epel-release
+      - bind-utils
   ignore_errors: true
   when: ansible_os_family == 'RedHat'
 
-- name: Prepare packages for apt
-  apt:
-    pkg:
-      - sysstat
-      - git
-      - bash-completion
-      - bind-utils
-      - jq
-      - htop
-      - lsof
-      - rsync
-  ignore_errors: true
-  when: ansible_os_family == 'Debian'
+# 使用 add-apt-repository 命令添加 PPA
+# - name: Add PPA repository
+#   apt_repository:
+#     repo: "ppa:example/ppa"
+#     state: present
+#   when: ansible_os_family == "Debian"
+
+# - name: Update apt package cache
+#   apt:
+#     update_cache: yes
+#   when: ansible_os_family == "Debian"
 
 - name: set -o vi
   lineinfile:
