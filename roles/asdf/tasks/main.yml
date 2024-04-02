@@ -1,0 +1,165 @@
+
+# - name: Set ansible_shell_type
+#   set_fact:
+#     ansible_shell_type: "{{ ansible_shell_type or 'bash' }}"
+
+# - name: Display current shell type
+#   debug:
+#     msg: "Current shell type is {{ ansible_shell_type_actual }}"
+# - name: Check if shell is zsh
+#   shell: |
+#     if [[ "$SHELL" == *"/zsh" ]]; then
+#       echo "Shell is zsh"
+#     else
+#       echo "Shell is not zsh"
+#     fi
+#   register: shell_check_output
+  
+# - debug:
+#     msg: "Current shell type is {{ shell_check_output.stdout }}"
+
+# - name: Determine OS family
+#   set_fact:
+#     os_family: "{{ ansible_os_family }}"
+
+# - name: Install required system dependencies
+#   package:
+#     # name: "{{ centos_packages if os_family == 'RedHat' else ubuntu_packages }}"
+#     name: "{{ centos_packages if os_family == 'RedHat' else ubuntu_packages }}"
+#     state: present
+
+# - name: Clone asdf repository
+#   git:
+#     repo: https://github.com/asdf-vm/asdf.git
+#     dest: ~/.asdf
+#     version: v0.14.0
+
+# - name: Add asdf to user's shell profile
+#   lineinfile:
+#     dest: "{{ asdf_profile }}"
+#     line: 'source {{ asdf_home }}/asdf.sh'
+#     state: present
+#     insertafter: EOF
+#   when: asdf_user != "root"
+
+# - name: Add asdf to .bashrc
+#   lineinfile:
+#     path: ~/.bashrc
+#     line: ". \"$HOME/.asdf/asdf.sh\""
+
+# - name: Add asdf completions to .bashrc
+#   lineinfile:
+#     path: ~/.bashrc
+#     line: ". \"$HOME/.asdf/completions/asdf.bash\""
+
+# - name: Add asdf to .bashrc (bash)
+#   lineinfile:
+#     path: ~/.bashrc
+#     line:
+#       - ". \"$HOME/.asdf/asdf.sh\""
+#       - ". \"$HOME/.asdf/completions/asdf.bash\""
+#   when: ansible_shell_type == "bash"
+
+# - name: Initialise shell
+#   include_tasks: shell.yml
+#   when: asdf_init_shell | bool
+
+# - name: Add asdf to .zshrc (zsh bash)
+#   lineinfile:
+#     path: "{{ ansible_shell_type == 'bash' ? '~/.bashrc' : '~/.zshrc' }}"
+#     line:
+#       - ". \"$HOME/.asdf/asdf.sh\""
+#       - ". \"$HOME/.asdf/completions/asdf.bash\""
+# when: ansible_shell_type == "bash" or ansible_shell_type == "zsh"
+---
+
+- name: Install prerequisites (Debian-based)
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - curl
+    - gpg
+  when: ansible_os_family == 'Debian'
+
+- name: Install prerequisites (RedHat-based)
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - git
+    - curl
+    - gnupg2
+  when: ansible_os_family == 'RedHat'
+
+- name: Clone asdf repository
+  git:
+    # repo: "https://github.com/asdf-vm/asdf.git"
+    repo: "https://gitee.com/asdf-vm/asdf.git"
+    dest: "{{ ansible_user_dir }}/asdf"
+    update: no
+
+- name: Initialise shell
+  include_tasks: shell.yml
+  when: asdf_init_shell | bool
+
+# - name: Add asdf to user's shell profile
+#   lineinfile:
+#     dest: "{{ ansible_user_dir }}/.bashrc"
+#     line: |
+#       . $HOME/asdf/asdf.sh
+#       . $HOME/asdf/completions/asdf.bash
+#     insertbefore: EOF
+#   when: ansible_shell_type == 'bash'
+
+# - name: Add asdf to user's shell profile (zsh)
+#   lineinfile:
+#     dest: "{{ ansible_user_dir }}/.zshrc"
+#     line: |
+#       . $HOME/asdf/asdf.sh
+#       . $HOME/asdf/completions/asdf.bash
+#     insertbefore: EOF
+#   when: ansible_shell_type == 'zsh'
+
+# - name: Search for asdf installation directory
+#   find:
+#     paths: /
+#     patterns: "asdf"
+#   register: asdf_installation
+
+# - name: Set asdf home directory
+#   set_fact:
+#     asdf_home: "{{ item.path }}"
+#   with_items: "{{ asdf_installation.files }}"
+#   when: item.isdir
+
+# - debug:
+#     msg: "asdf_home {{ asdf_home }}"
+
+- name: Install Node.js plugin
+  # shell: "{{ ansible_user_dir }}/asdf/bin/asdf plugin add nodejs"
+  shell: "{{ ansible_user_dir }}/asdf/bin/asdf plugin add nodejs"
+  # args:
+  #   creates: "{{ ansible_user_dir }}/asdf/plugins/nodejs"
+
+- name: Install Python plugin
+  shell: "{{ ansible_user_dir }}/asdf/bin/asdf plugin add python"
+  # args:
+  #   creates: "{{ ansible_user_dir }}/asdf/plugins/python"
+
+- name: Install Node.js 18.20.0
+  shell: "asdf install nodejs 18.20.0"
+  # args:
+  #   creates: "{{ ansible_user_dir }}/asdf/installs/nodejs/18.20.0"
+
+- name: Set Node.js 18.20.0 as global
+  shell: "{{ ansible_user_dir }}/asdf/bin/asdf global nodejs 18.20.0"
+
+- name: Install Python
+  shell: "{{ ansible_user_dir }}/asdf/bin/asdf install python latest"
+  # args:
+  #   creates: "{{ ansible_user_dir }}/asdf/installs/python/latest"
+
+- name: Set Python as global
+  shell: "{{ ansible_user_dir }}/asdf/bin/asdf global python latest"

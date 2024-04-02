@@ -1,0 +1,51 @@
+- name: Prepare packages
+  package:
+    name:
+      - sysstat
+      - git
+      - bash-completion
+      - dnsutils
+      - jq
+      - htop
+      - lsof
+      - rsync
+  ignore_errors: true
+  when: ansible_os_family == 'RedHat' or ansible_os_family == 'Debian'
+
+- name: Prepare (RedHat only)
+  yum:
+    name: 
+      - epel-release
+      - bind-utils
+  ignore_errors: true
+  when: ansible_os_family == 'RedHat'
+
+# 使用 add-apt-repository 命令添加 PPA
+# - name: Add PPA repository
+#   apt_repository:
+#     repo: "ppa:example/ppa"
+#     state: present
+#   when: ansible_os_family == "Debian"
+
+# - name: Update apt package cache
+#   apt:
+#     update_cache: yes
+#   when: ansible_os_family == "Debian"
+
+- name: set -o vi
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "^set -o vi$"
+    line: "set -o vi"
+
+- name: C-l -> clear
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "clear-screen"
+    line: bind -m vi-insert "\C-l":clear-screen
+
+- name: LANG=
+  lineinfile:
+    path: ~/.bashrc
+    regexp: "export LANG"
+    line: export LANG=''

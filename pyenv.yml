@@ -1,0 +1,36 @@
+---
+- name: Install pyenv on CentOS/Ubuntu
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Clone pyenv repository
+      git:
+        repo: https://kkgithub.com/pyenv/pyenv.git
+        # githubfast
+        # repo: https://gitclone.com/github.com/pyenv/pyenv.git
+        dest: ~/.pyenv
+        update: no
+
+    - name: Add pyenv initialization to shell configuration file
+      lineinfile:
+        dest: "{{ item }}"
+        # line: "{{ lookup('file', '~/.pyenv/bin/pyenv') }}"
+        line: "~/.pyenv/bin/pyenv"
+      loop:
+        - ~/.bashrc
+        - ~/.bash_profile
+        # - ~/.zshrc
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+      become: yes
+
+    - name: Reload shell configuration
+      shell: "source {{ item }}"
+      loop:
+        - ~/.bashrc
+        - ~/.bash_profile
+        # - ~/.zshrc
+
+    - name: Verify pyenv installation
+      command: pyenv --version
+

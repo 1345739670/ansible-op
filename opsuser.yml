@@ -1,0 +1,35 @@
+---
+- name: 配置运维工程师账户和权限
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: 创建运维工程师账号
+      user:
+        name: opsuser
+        comment: "运维工程师账号"
+        shell: /bin/bash
+
+    - name: 创建运维工程师组
+      group:
+        name: ops
+        state: present
+
+    - name: 将运维工程师账号添加到运维组
+      user:
+        name: opsuser
+        groups: ops
+        append: yes
+
+    - name: 为运维组配置sudo权限
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%ops '
+        line: '%ops ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /usr/bin/journalctl'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: 确保安全性，验证文件权限
+      file:
+        path: /etc/sudoers
+        mode: 0440

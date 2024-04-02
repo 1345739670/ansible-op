@@ -1,0 +1,44 @@
+- name: Determine OS family
+  set_fact:
+    os_family: "{{ ansible_os_family }}"
+
+- name: Prepare packages
+  package:
+    # name: "{{ packages }}"
+    name: "{{ centos_packages if os_family == 'RedHat' else ubuntu_packages }}"
+    state: present
+  vars:
+    common_packages:
+      - vim
+    centos_packages:
+      - "{{ common_packages }}"
+      - epel-release
+    ubuntu_packages:
+      - "{{ common_packages }}"
+
+# - name: Install vim package
+#   apt:
+#     name: vim
+#     state: present
+#   when: ansible_os_family == "Debian"
+
+# - name: install vim
+#   git:
+#     repo: https://github.com/vim/vim.git
+#     dest: ~/Documents/vim
+
+# - name: make vim
+#   shell: make distclean && make && make install
+#   args:
+#     chdir: ~/Documents/vim
+
+- name: clone config file
+  git:
+    repo: git@github.com:shfshanyue/vim-config.git
+    dest: ~/.vim-config
+
+- name: copy config file
+  copy:
+    src: ~/.vim-config/.vimrc
+    dest: ~/.vimrc
+    remote_src: yes
