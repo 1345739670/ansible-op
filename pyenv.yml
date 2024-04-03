@@ -7,30 +7,29 @@
     - name: Clone pyenv repository
       git:
         repo: https://kkgithub.com/pyenv/pyenv.git
-        # githubfast
-        # repo: https://gitclone.com/github.com/pyenv/pyenv.git
         dest: ~/.pyenv
         update: no
 
-    - name: Add pyenv initialization to shell configuration file
+    - name: Append PATH variable to .bashrc
       lineinfile:
-        dest: "{{ item }}"
-        # line: "{{ lookup('file', '~/.pyenv/bin/pyenv') }}"
-        line: "~/.pyenv/bin/pyenv"
-      loop:
-        - ~/.bashrc
-        - ~/.bash_profile
-        # - ~/.zshrc
-      when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
-      become: yes
+        path: ~/.bashrc
+        line: "export PATH=\"$HOME/.pyenv/bin:$PATH\""
+        create: yes
+      register: path_added
 
-    - name: Reload shell configuration
-      shell: "source {{ item }}"
-      loop:
-        - ~/.bashrc
-        - ~/.bash_profile
-        # - ~/.zshrc
+    - name: Evaluate pyenv initialization in .bashrc
+      lineinfile:
+        path: ~/.bashrc
+        line: "eval \"$(pyenv init --path)\""
+        insertafter: "^export PATH="
+        create: yes
+      when: path_added is changed
+
+    - name: Source .bashrc to apply changes
+      command: "bash -c 'source ~/.bashrc'"
+      when: path_added is changed
 
     - name: Verify pyenv installation
-      command: pyenv --version
+      command: "pyenv --version"
+      # command: "bash -c 'pyenv --version'"
 
